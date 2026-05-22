@@ -1,20 +1,28 @@
-import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View } from 'react-native';
+import { useEffect } from 'react'
+import { StatusBar } from 'expo-status-bar'
+import AppNavigator from './src/navigation/AppNavigator'
+import { loadRecipes, saveRecipes } from './src/storage'
+import { SEED_RECIPES } from './src/data/seed'
 
 export default function App() {
-  return (
-    <View style={styles.container}>
-      <Text>Open up App.js to start working on your app!</Text>
-      <StatusBar style="auto" />
-    </View>
-  );
-}
+  useEffect(() => {
+    loadRecipes().then(async (recipes) => {
+      if (recipes.length === 0) {
+        const seeded = SEED_RECIPES.map((r) => ({
+          ...r,
+          id: Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
+          createdAt: new Date().toISOString(),
+          isFavorite: false,
+        }))
+        await saveRecipes(seeded)
+      }
+    })
+  }, [])
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#fff',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-});
+  return (
+    <>
+      <StatusBar style="light" />
+      <AppNavigator />
+    </>
+  )
+}
